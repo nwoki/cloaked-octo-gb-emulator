@@ -6,14 +6,18 @@
 class Cartridge::Private
 {
 public :
-    Private() {};
+    Private() {
+        // start with clean data
+        clear();
+    };
 
     void clear() {
         name.clear();
+        type = NONE;
     }
 
     QString name;
-//     GameBoyType type;
+    GameBoyType type;
 };
 
 
@@ -42,14 +46,10 @@ void Cartridge::loadRom(const QString &romFile)
     m_romFile = romFile;
     QFile rom(m_romFile);
 
-    // let's see what data we have
+    // start loading cartridge data
     if (rom.open(QIODevice::ReadOnly)) {
         QByteArray romData = rom.readAll();
-
-        // DEBUG
-//         for (int i = 0; i < romData.size(); ++i) {
-//             qDebug() << "@ " << i << " -> " << " : " << (quint8)romData.at(i) << " : " << QString(romData.at(i)).toAscii().toHex();
-//         }
+        rom.close();
 
         // get cartridge name. Max length is 16 as from spec
         for (int i = 0; i < 16; ++i) {
@@ -60,8 +60,16 @@ void Cartridge::loadRom(const QString &romFile)
             d->name.append(romData.at(0x0134 + i));
         }
 
+        // cartridge type
+        if ((quint8)romData.at(0x0143) == 80) {
+            d->type = COLOUR;
+        } else {
+            d->type = NO_COLOUR;
+        }
+
         // DEBUG
-        qDebug() << d->name;
+        qDebug() << "ROM name: " << d->name;
+        qDebug() << "ROM type: " << (quint8)romData.at(0x0143);
     }
 }
 
@@ -75,4 +83,10 @@ QString Cartridge::name() const
 QString Cartridge::romFile() const
 {
     return m_romFile;
+}
+
+
+Cartridge::GameBoyType Cartridge::type() const
+{
+    return d->type;
 }

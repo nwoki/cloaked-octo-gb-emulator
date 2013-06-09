@@ -12,7 +12,7 @@ public:
     enum GameBoyType {
         COLOUR,
         NO_COLOUR,
-//         NONE
+        NONE
     };
 
     Cartridge(QObject *parent = 0);
@@ -21,6 +21,7 @@ public:
     void loadRom(const QString &romFile);
     QString name() const;
     QString romFile() const;
+    GameBoyType type() const;
 
 private:
     QString m_romFile;  // ROM file path

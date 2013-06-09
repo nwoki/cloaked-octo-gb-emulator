@@ -6,6 +6,8 @@ cmake_minimum_required(VERSION 2.8.9)
 find_package(Qt4 REQUIRED)
 include(${QT_USE_FILE})
 
+include_directories(${QT_INCLUDE_DIR})
+
 # C++11
 if (CMAKE_COMPILER_IS_GNUCXX)
    execute_process(COMMAND ${CMAKE_CXX_COMPILER} -dumpversion OUTPUT_VARIABLE GCC_VERSION)

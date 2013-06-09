@@ -3,6 +3,7 @@
 #include <QtCore/QDebug>
 #include <QtCore/QFile>
 
+
 class Cartridge::Private
 {
 public :
@@ -13,11 +14,13 @@ public :
 
     void clear() {
         name.clear();
-        type = NONE;
+        gameBoyType = NONE;
+        type = ROM_UNSOPPORTED;
     }
 
     QString name;
-    GameBoyType type;
+    GameBoyType gameBoyType;
+    CartridgeType type;
 };
 
 
@@ -31,6 +34,63 @@ Cartridge::Cartridge(QObject *parent)
 
 Cartridge::~Cartridge()
 {
+}
+
+
+void Cartridge::determineCartridgeType(quint8 byte)
+{
+    switch (byte) {
+        case 0:         // rom only
+        case 8:         // rom + ram
+        case 9:         // rom + ram + batt
+            qDebug("ROM");
+            d->type = ROM_ONLY;
+            break;
+        case 1:         // rom + mbc1
+        case 2:         // rom + mbc1 + ram
+        case 3:         // rom + mbc1 + ram + batt
+            qDebug("ROM_MBC1");
+            d->type = ROM_MBC1;
+            break;
+        case 5:         // rom + mbc2
+        case 6:
+            qDebug("ROM_MBC2");
+            d->type = ROM_MBC2;
+            break;
+        case 15:        // rom + mbc3 + timer + batt
+        case 16:        // rom + mbc3 + timer + batt + ram
+        case 17:        // rom + mbc3
+        case 18:        // rom + mbc3 + ram
+        case 19:        // rom + mbc3 + ram + batt
+            qDebug("ROM_MBC3");
+            d->type = ROM_MBC3;
+            break;
+        case 25:        // rom + mbc5
+        case 26:        // rom + mbc5 + ram
+        case 27:        // rom + mbc5 + ram + batt
+        case 28:        // rom + mbc5 + rumble
+        case 29:        // rom + mbc5 + rumble + sram
+        case 30:        // rom + mbc5 + rumble + sram + batt
+            qDebug("ROM_MBC5");
+            d->type = ROM_MBC5;
+            break;
+        default:
+            qDebug("ROM_UNSOPPORTED");
+            d->type = ROM_UNSOPPORTED;
+            break;
+    };
+}
+
+
+Cartridge::CartridgeType Cartridge::type() const
+{
+    return d->type;
+}
+
+
+Cartridge::GameBoyType Cartridge::gameBoyType() const
+{
+    return d->gameBoyType;
 }
 
 
@@ -60,16 +120,20 @@ void Cartridge::loadRom(const QString &romFile)
             d->name.append(romData.at(0x0134 + i));
         }
 
-        // cartridge type
+        // gameBoy type
         if ((quint8)romData.at(0x0143) == 80) {
-            d->type = COLOUR;
+            d->gameBoyType = COLOUR;
         } else {
-            d->type = NO_COLOUR;
+            d->gameBoyType = NO_COLOUR;
         }
+
+        // cartridge type
+        determineCartridgeType((quint8)romData.at(0x0147));
 
         // DEBUG
         qDebug() << "ROM name: " << d->name;
-        qDebug() << "ROM type: " << (quint8)romData.at(0x0143);
+        qDebug() << "ROM gameBoyType: " << (quint8)romData.at(0x0143);
+        qDebug() << "Cartridge type: " << (quint8)romData.at(0x0147);
     }
 }
 
@@ -83,10 +147,4 @@ QString Cartridge::name() const
 QString Cartridge::romFile() const
 {
     return m_romFile;
-}
-
-
-Cartridge::GameBoyType Cartridge::type() const
-{
-    return d->type;
 }

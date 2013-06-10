@@ -17,12 +17,16 @@ public :
         gameBoyType = NONE;
         type = ROM_UNSOPPORTED;
         nintendoGraphic.clear();
+        ramSize = RAM_NONE;
+        romSize = ROM_NONE;
     }
 
     QString name;
     GameBoyType gameBoyType;
     CartridgeType type;
     QByteArray nintendoGraphic;
+    RamSize ramSize;
+    RomSize romSize;
 };
 
 
@@ -84,9 +88,60 @@ void Cartridge::determineCartridgeType(quint8 byte)
 }
 
 
-Cartridge::CartridgeType Cartridge::type() const
+void Cartridge::determineRamSize(quint8 byte)
 {
-    return d->type;
+    switch (byte) {
+        case 0:
+            d->ramSize = RAM_NONE;
+            qDebug("NONE");
+            break;
+        case 1:
+            d->ramSize = RAM_2KB;
+            break;
+        case 2:
+            d->ramSize = RAM_8KB;
+            break;
+        case 3:
+            d->ramSize = RAM_32KB;
+            break;
+        case 4:
+            d->ramSize = RAM_128KB;
+            break;
+        default:
+            d->ramSize = RAM_NONE;
+            break;
+    };
+}
+
+
+void Cartridge::determineRomSize(quint8 byte)
+{
+    switch (byte) {
+        case 0:
+            d->romSize = ROM_32KB;
+            break;
+        case 1:
+            d->romSize = ROM_64KB;
+            break;
+        case 2:
+            d->romSize = ROM_128KB;
+            break;
+        case 3:
+            d->romSize = ROM_256KB;
+            break;
+        case 4:
+            d->romSize = ROM_512KB;
+            break;
+        case 5:
+            d->romSize = ROM_1MB;
+            break;
+        case 6:
+            d->romSize = ROM_2MB;
+            break;
+        default:
+            d->romSize = ROM_NONE;
+            break;
+    };
 }
 
 
@@ -137,11 +192,18 @@ void Cartridge::loadRom(const QString &romFile)
         // cartridge type
         determineCartridgeType((quint8)romData.at(0x0147));
 
+        // ram
+        determineRamSize((quint8)romData.at(0x0149));
+
+        // rom
+        determineRomSize((quint8)romData.at(0x0148));
+
         // DEBUG
         qDebug() << "ROM name: " << d->name;
         qDebug() << "ROM gameBoyType: " << (quint8)romData.at(0x0143);
         qDebug() << "Cartridge type: " << (quint8)romData.at(0x0147);
-        qDebug() << "ROM size: " << (quint32)romData.at(0x0148);
+        qDebug() << "ROM size: " << (quint8)romData.at(0x0148);
+        qDebug() << "RAM size: " << (quint8)romData.at(0x0149);
     }
 }
 
@@ -158,7 +220,25 @@ QByteArray Cartridge::nintendoGraphic() const
 }
 
 
+Cartridge::RamSize Cartridge::ram() const
+{
+    return d->ramSize;
+}
+
+
+Cartridge::RomSize Cartridge::rom() const
+{
+    return d->romSize;
+}
+
+
 QString Cartridge::romFile() const
 {
     return m_romFile;
+}
+
+
+Cartridge::CartridgeType Cartridge::type() const
+{
+    return d->type;
 }

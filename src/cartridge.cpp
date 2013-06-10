@@ -16,11 +16,13 @@ public :
         name.clear();
         gameBoyType = NONE;
         type = ROM_UNSOPPORTED;
+        nintendoGraphic.clear();
     }
 
     QString name;
     GameBoyType gameBoyType;
     CartridgeType type;
+    QByteArray nintendoGraphic;
 };
 
 
@@ -111,6 +113,11 @@ void Cartridge::loadRom(const QString &romFile)
         QByteArray romData = rom.readAll();
         rom.close();
 
+        // get nintendo graphic data
+        for (int i = 0; i < 48; ++i) {
+            d->nintendoGraphic.append(romData.at(0x0104+i));
+        }
+
         // get cartridge name. Max length is 16 as from spec
         for (int i = 0; i < 16; ++i) {
             if (romData.at(0x0134 + i) == 0) {
@@ -134,6 +141,7 @@ void Cartridge::loadRom(const QString &romFile)
         qDebug() << "ROM name: " << d->name;
         qDebug() << "ROM gameBoyType: " << (quint8)romData.at(0x0143);
         qDebug() << "Cartridge type: " << (quint8)romData.at(0x0147);
+        qDebug() << "ROM size: " << (quint32)romData.at(0x0148);
     }
 }
 
@@ -141,6 +149,12 @@ void Cartridge::loadRom(const QString &romFile)
 QString Cartridge::name() const
 {
     return d->name;
+}
+
+
+QByteArray Cartridge::nintendoGraphic() const
+{
+    return d->nintendoGraphic;
 }
 
 

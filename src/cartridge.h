@@ -30,6 +30,7 @@ public:
     CartridgeType type() const;
     void loadRom(const QString &romFile);
     QString name() const;
+    QByteArray nintendoGraphic() const;
     QString romFile() const;
     GameBoyType gameBoyType() const;
 

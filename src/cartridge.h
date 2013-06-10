@@ -18,6 +18,11 @@ public:
         ROM_UNSOPPORTED
     };
 
+    enum GameBoyFunctions {
+        GAMEBOY,
+        SUPER_GAMEBOY
+    };
+
     enum GameBoyType {
         COLOUR,
         NO_COLOUR,
@@ -57,6 +62,7 @@ public:
     RamSize ram() const;
     RomSize rom() const;
     QString romFile() const;
+    quint8 romVersion() const;
     CartridgeType type() const;
 
 private:

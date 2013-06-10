@@ -6,7 +6,7 @@
 
 Core::Core(QObject *parent)
     : QObject(parent)
-    , m_cartridge(new Cartridge)
+    , m_cartridge(new Cartridge(this))
 {
 }
 
